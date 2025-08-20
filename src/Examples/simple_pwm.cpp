@@ -38,14 +38,14 @@ uint16_t parse_uint16(int argc, char* argv[], const std::string& key, uint16_t d
 }
 
 void print_help() {
-    std::cout << "Usage: pwm_app [options]"                                             << std::endl;
-              << "Options:"                                                             << std::endl;
-              << "  --duty_cycle <0-100>     Duty cycle in % (default: 50.0)"           << std::endl;
-              << "  --period_ms <ms>         Period in milliseconds (default: 1.0 ms)"  << std::endl;
-              << "  --frequency_hz <Hz>      Frequency in Hz"                           << std::endl;
-              << "  --path <string>          GPIO chip path (default: /dev/gpiochip0)"  << std::endl;
-              << "  --gpio_line <uint16>     GPIO line number (default: 28)"            << std::endl;
-              << "  --help                   Show this help message";                   << std::endl;
+    std::cout << "Usage: pwm_app [options]"                                             << std::endl
+              << "Options:"                                                             << std::endl
+              << "  --duty_cycle <0-100>     Duty cycle in % (default: 50.0)"           << std::endl
+              << "  --period_ms <ms>         Period in milliseconds (default: 1.0 ms)"  << std::endl
+              << "  --frequency_hz <Hz>      Frequency in Hz"                           << std::endl
+              << "  --path <string>          GPIO chip path (default: /dev/gpiochip0)"  << std::endl
+              << "  --gpio_line <uint16>     GPIO line number (default: 28)"            << std::endl
+              << "  --help                   Show this help message"                    << std::endl;
 
     return;
 }
@@ -95,10 +95,10 @@ int main(int argc, char* argv[]) {
 
         pwm.enable();
 
-        std::cout << "PWM started:"                                     << std::endl;
-                  << "  Duty cycle = " << pwm.get_duty_cycle() << "%"   << std::endl;
-                  << "  Period     = " << pwm.get_period_ms() << " ms"  << std::endl;
-                  << "  GPIO chip  = " << path                          << std::endl;
+        std::cout << "PWM started:"                                     << std::endl
+                  << "  Duty cycle = " << pwm.get_duty_cycle() << "%"   << std::endl
+                  << "  Period     = " << pwm.get_period_ms() << " ms"  << std::endl
+                  << "  GPIO chip  = " << path                          << std::endl
                   << "  GPIO line  = " << gpio_line                     << std::endl;
 
         std::cout << "Press Enter to stop..." << std::endl;
