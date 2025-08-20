@@ -105,7 +105,7 @@ int main(int argc, char* argv[]) {
         std::cin.get();
 
         pwm.disable();
-        std::cout << "PWM stopped." << std::endl;
+        std::cout << "PWM stopped!" << std::endl;
     }
     catch(const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
