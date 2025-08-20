@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <sstream>
 #include <limits>
+#include <thread>
 
 float parse_float(int argc, char* argv[], const std::string& key, bool &found) {
     for (int i = 1; i < argc; ++i)
@@ -52,9 +53,22 @@ void print_help() {
               << "  duty <0-100>             Change duty cycle"                         << std::endl
               << "  period <ms>              Change period in milliseconds"             << std::endl
               << "  freq <Hz>                Change frequency in Hz"                    << std::endl
+              << "  info                     Show current PWM configuration"            << std::endl
               << "  exit                     Stop PWM and exit"                         << std::endl;
 
     return;
+}
+
+void print_current_config(const Emulated_PWM& pwm, const std::string& path, uint16_t gpio_line) {
+    float frequency = (pwm.get_period_ms() > 0.0f) ? (1000.0f / pwm.get_period_ms()) : 0.0f;
+    
+    std::cout << "Current PWM configuration:"                                       << std::endl
+              << "  Duty cycle = " << pwm.get_duty_cycle() << "%"                   << std::endl
+              << "  Period     = " << pwm.get_period_ms() << " ms"                  << std::endl
+              << "  Frequency  = " << frequency << " Hz"                            << std::endl
+              << "  GPIO chip  = " << path                                          << std::endl
+              << "  GPIO line  = " << gpio_line                                     << std::endl
+              << "  Status     = " << (pwm.is_enabled() ? "ENABLED" : "DISABLED")   << std::endl;
 }
 
 int main(int argc, char* argv[]) {
@@ -114,71 +128,78 @@ int main(int argc, char* argv[]) {
         // Thread to read commands
         std::thread input_thread([&]() {
             std::string line;
-            while(running.load()) {
-                std::cout << "Command (duty <0-100>, period <ms>, freq <Hz>, exit): ";
+            while (running.load()) {
+                std::cout << "Command (duty <0-100>, period <ms>, freq <Hz>, info, exit): ";
 
                 std::getline(std::cin, line);
                 std::istringstream iss(line);
                 std::string cmd;
                 iss >> cmd;
 
-                if(cmd == "duty") {
+                if (cmd == "duty") {
                     float new_duty;
 
-                    if(iss >> new_duty) {
+                    if (iss >> new_duty) {
                         if (new_duty >= 0.0f && new_duty <= 100.0f) {
                             pwm.set_duty_cycle(new_duty);
 
                             std::cout << "Duty cycle updated to " << pwm.get_duty_cycle() << "%" << std::endl;
                         }
                         else
-                            std::cout << "Error: Duty cycle must be between 0 and 100" << std::endl;
+                            std::cout << "Error: Duty cycle must be between 0 and 100!" << std::endl;
                     }
                     else
-                        std::cout << "Error: Invalid duty cycle value" << std::endl;
+                        std::cout << "Error: Invalid duty cycle value!" << std::endl;
                 }
-                else if(cmd == "period") {
+
+                else if (cmd == "period") {
                     float new_period;
 
-                    if(iss >> new_period) {
+                    if (iss >> new_period) {
                         if (new_period > 0.0f) {
                             pwm.set_period_ms(new_period);
 
                             std::cout << "Period updated to " << pwm.get_period_ms() << " ms" << std::endl;
                         }
                         else
-                            std::cout << "Error: Period must be > 0" << std::endl;
+                            std::cout << "Error: Period must be > 0!" << std::endl;
                     }
                     else
-                        std::cout << "Error: Invalid period value" << std::endl;
+                        std::cout << "Error: Invalid period value!" << std::endl;
                 }
-                else if(cmd == "freq") {
+
+                else if (cmd == "freq") {
                     float new_freq;
 
-                    if(iss >> new_freq && new_freq > 0.0f) {
+                    if (iss >> new_freq && new_freq > 0.0f) {
                         pwm.set_period_ms(1000.0f / new_freq);
 
                         std::cout << "Frequency updated to " << new_freq << " Hz (period " 
                                   << pwm.get_period_ms() << " ms)" << std::endl;
                     }
                     else
-                        std::cout << "Error: Frequency must be > 0" << std::endl;
+                        std::cout << "Error: Frequency must be > 0!" << std::endl;
                 }
-                else if(cmd == "exit") {
+
+                else if (cmd == "info")
+                    print_current_config(pwm, path, gpio_line);
+
+                else if (cmd == "exit") {
                     running.store(false);
 
                     break;
                 }
-                else if(!cmd.empty())
-                    std::cout << "Unknown command: " << cmd << ". Type 'exit' to quit." << std::endl;
+
+                else if (!cmd.empty())
+                    std::cout << "Unknown command: " << cmd << ". Type 'exit' to quit!" << std::endl;
             }
         });
 
         input_thread.join();
         pwm.disable();
-        std::cout << "PWM stopped." << std::endl;
+        std::cout << std::endl << "PWM stopped!" << std::endl;
     }
-    catch(const std::exception& e) {
+    catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
 
         return 1;
